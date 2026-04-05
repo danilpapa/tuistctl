@@ -4,7 +4,6 @@ use std::path::{PathBuf};
 use walkdir::WalkDir;
 
 pub fn find_workspace() -> Option<PathBuf> {
-    // TODO: exclude .gitignore files
     for entry in WalkDir::new(".") {
         let entry = entry
             .expect("Could not scan files in directory");

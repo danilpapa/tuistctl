@@ -25,7 +25,6 @@ pub fn get_targets(workspace: &PathBuf) -> Result<Vec<String>, String> {
     }
 
     let workspace_scheme_name = workspace_scheme_name(workspace);
-
     Ok(parse_schemes(&combined_output, &workspace_scheme_name))
 }
 
