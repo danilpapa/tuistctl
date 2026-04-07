@@ -9,8 +9,9 @@ fn main() {
         .expect("It is impossible to find \"workspace\" file in current file system");
     let targets = get_targets(&workspace_path);
     if let Some(option_file_path) = options_file() {
+        println!("{}", option_file_path.display());
         let options = get_options(&option_file_path);
-        
+
         for option in &options {
             println!("{}", option);
         }
