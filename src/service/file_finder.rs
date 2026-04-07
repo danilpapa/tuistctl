@@ -18,7 +18,7 @@ pub fn options_file() -> Option<PathBuf> {
     for entry in WalkDir::new(".") {
         let entry = entry
             .expect("Could not scan files in directory");
-        if match_workspace(&entry) {
+        if match_options(&entry) {
             return Some(entry.into_path());
         }
     };
@@ -32,5 +32,5 @@ fn match_workspace(entry: &DirEntry) -> bool {
 
 fn match_options(entry: &DirEntry) -> bool {
     entry.file_type().is_file() &&
-        entry.path().extension() == Some(OsStr::new("txt"))
+        entry.path().file_name() == Some(OsStr::new("options.txt"))
 }
