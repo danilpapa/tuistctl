@@ -1,5 +1,7 @@
+use crate::service::file_finder::options_file;
+use crate::service::option_parser::{get_options, TuistOptionsList};
 use crossterm::{
-    event::{self, Event, KeyCode}
+    event::{self, Event, KeyCode},
 };
 use ratatui::{
     Terminal,
@@ -7,23 +9,21 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     style::{Style, Modifier},
 };
-use crate::service::file_finder::find_workspace;
-use crate::service::scheme_parser::get_targets;
 use crate::ui::app_state::AppState;
-use crate::ui::target_state::TargetsState;
+use crate::ui::option_state::OptionState;
 
-pub fn run_targets_stage(
+pub fn run_options_stage(
     app_state: &mut AppState,
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
 ) -> anyhow::Result<Vec<String>> {
-    let targets = obtain_targets();
-    match targets {
-        Ok(targets) => {
-            let mut state = TargetsState::new(targets);
+    let options_result = obtain_options();
+    match options_result {
+        Ok(options) => {
+            let mut state = OptionState::new(options.items);
             return process_ui(
                 app_state,
-                terminal,
                 &mut state,
+                terminal,
             );
         },
         Err(e) => {
@@ -32,77 +32,73 @@ pub fn run_targets_stage(
         }
     }
 }
-
-fn obtain_targets() -> Result<Vec<String>, String> {
-    let workspace_path = find_workspace()
-        .expect("It is impossible to find \"workspace\" file in current file system");
-    get_targets(&workspace_path)
-}
-
 fn process_ui(
     app_state: &mut AppState,
+    option_state: &mut OptionState,
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    state: &mut TargetsState
 ) -> anyhow::Result<Vec<String>> {
-
     let result = loop {
         terminal.draw(|f| {
             let size = f.area();
 
-            let ui_items: Vec<ListItem> = state
-                .targets
+            let ui_items: Vec<ListItem> = option_state
+                .options
                 .iter()
+                .map(|option| {
+                    option.name.clone()
+                })
                 .enumerate()
-                .map(|(idx, target)| {
-                    let prefix = if state.selected.contains(&idx) {
+                // TODO: Extension to collection
+                .map(|(idx, option)| {
+                    let prefix = if option_state.selected.contains(&idx) {
                         "[x] "
                     } else {
                         "[ ] "
                     };
-                    ListItem::new(format!("{}{}", prefix, target))
+                    return ListItem::new(format!("{}{}", prefix, option));
                 })
                 .collect();
 
             let mut list_state = ListState::default();
-            list_state.select(Some(state.cursor));
+            list_state.select(Some(option_state.cursor));
 
             let list = List::new(ui_items)
-                .block(Block::default().title("Targets").borders(Borders::ALL))
+                .block(Block::default().title("Options").borders(Borders::ALL))
                 .highlight_style(
                     Style::default().add_modifier(Modifier::REVERSED)
                 );
 
             f.render_stateful_widget(list, size, &mut list_state);
         })?;
-
+        // TODO: Reusable
         if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Char('q') => break None,
                 KeyCode::Down => {
-                    if state.cursor + 1 < state.targets.len() {
-                        state.cursor += 1;
+                    if option_state.cursor + 1 < option_state.options.len() {
+                        option_state.cursor += 1;
                     } else {
-                        state.cursor = 0;
+                        option_state.cursor = 0;
                     }
                 }
                 KeyCode::Up => {
-                    if state.cursor > 0 {
-                        state.cursor -= 1;
+                    if option_state.cursor > 0 {
+                        option_state.cursor -= 1;
                     } else {
-                        state.cursor = state.targets.len() - 1;
+                        option_state.cursor = option_state.options.len() - 1;
                     }
                 }
                 KeyCode::Char(' ') => {
-                    if state.selected.contains(&state.cursor) {
-                        state.selected.remove(&state.cursor);
+                    if option_state.selected.contains(&option_state.cursor) {
+                        option_state.selected.remove(&option_state.cursor);
                     } else {
-                        state.selected.insert(state.cursor);
+                        option_state.selected.insert(option_state.cursor);
                     }
                 }
                 KeyCode::Enter => {
-                    let selected = state.selected
+                    let selected = option_state.selected
                         .iter()
-                        .map(|&i| state.targets[i].clone())
+                        .map(|&i| option_state.options[i].name.clone())
                         .collect();
                     app_state.next();
                     break Some(selected);
@@ -115,4 +111,9 @@ fn process_ui(
     Ok(result.unwrap_or_default())
 }
 
-
+fn obtain_options() -> Result<TuistOptionsList, String> {
+    if let Some(option_file_path) = options_file() {
+        return Ok(get_options(&option_file_path))
+    };
+    Err("Hello".to_string())
+}

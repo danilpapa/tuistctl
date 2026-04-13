@@ -7,7 +7,7 @@ pub struct TuistOption {
 }
 
 pub struct TuistOptionsList {
-    items: Vec<TuistOption>,
+    pub items: Vec<TuistOption>,
 }
 
 impl TuistOptionsList {

@@ -21,4 +21,8 @@ impl AppState {
             AppState::Generation => AppState::Options
         }
     }
+    
+    pub fn skip_options(&mut self) {
+        *self = AppState::Generation
+    }
 }

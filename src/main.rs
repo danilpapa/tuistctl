@@ -1,43 +1,40 @@
-use crate::service::option_parser::{get_options, TuistOption, TuistOptionsList};
-use crate::service::file_finder::{find_workspace, options_file};
-use crate::service::scheme_parser::get_targets;
 use crate::ui::app_state::AppState;
+use crate::ui::options::options::run_options_stage;
 use crate::ui::targets::targets::run_targets_stage;
+use crossterm::{
+    execute,
+    terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{Terminal, backend::CrosstermBackend};
+use std::io;
 
 mod service;
 pub mod ui;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen)?;
+
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
     let mut screen_state = AppState::Targets;
 
     loop {
-        match screen_state.clone() {
+        match screen_state {
             AppState::Targets => {
-                let selected_targets = run_targets_stage()
-                    .expect("Failed to get targets from screen");
-
-                println!("Selected targets: {:?}", selected_targets);
-                break;
-            },
-            AppState::Options => {
-
-            },
-            AppState::Generation => {
-
+                run_targets_stage(&mut screen_state, &mut terminal)?;
             }
+            AppState::Options => {
+                run_options_stage(&mut screen_state, &mut terminal)?;
+            }
+            AppState::Generation => break
         }
     }
-}
 
-fn obtain_targets() -> Result<Vec<String>, String> {
-    let workspace_path = find_workspace()
-        .expect("It is impossible to find \"workspace\" file in current file system");
-    get_targets(&workspace_path)
-}
+    disable_raw_mode()?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+    terminal.show_cursor()?;
 
-fn obtain_options() -> Result<TuistOptionsList, String> {
-    if let Some(option_file_path) = options_file() {
-        return Ok(get_options(&option_file_path))
-    };
-    Err("Hello".to_string())
+    Ok(())
 }
