@@ -7,6 +7,7 @@ use crossterm::{
 };
 use ratatui::{Terminal, backend::CrosstermBackend};
 use std::io;
+use crossterm::terminal::{Clear, ClearType};
 
 mod service;
 pub mod ui;
@@ -28,7 +29,17 @@ fn main() -> anyhow::Result<()> {
             AppState::Options => {
                 run_options_stage(&mut screen_state, &mut terminal)?;
             }
-            AppState::Generation => break
+            AppState::Generation => {
+                break
+            },
+            AppState::None => {
+                execute!(
+                    terminal.backend_mut(),
+                    LeaveAlternateScreen,
+                    Clear(ClearType::All)
+                )?;
+                break
+            }
         }
     }
 

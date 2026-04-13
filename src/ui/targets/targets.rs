@@ -7,7 +7,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     style::{Style, Modifier},
 };
-use crate::service::file_finder::find_workspace;
+use crate::service::file_finder::{find_workspace, options_file};
 use crate::service::scheme_parser::get_targets;
 use crate::ui::app_state::AppState;
 use crate::ui::target_state::TargetsState;
@@ -77,7 +77,10 @@ fn process_ui(
 
         if let Event::Key(key) = event::read()? {
             match key.code {
-                KeyCode::Char('q') => break None,
+                KeyCode::Char('q') => {
+                    app_state.none();
+                    break None
+                },
                 KeyCode::Down => {
                     if state.cursor + 1 < state.targets.len() {
                         state.cursor += 1;
@@ -100,11 +103,21 @@ fn process_ui(
                     }
                 }
                 KeyCode::Enter => {
-                    let selected = state.selected
+                    let selected: Vec<String> = state.selected
                         .iter()
                         .map(|&i| state.targets[i].clone())
                         .collect();
-                    app_state.next();
+
+                    if selected.is_empty() {
+                        app_state.none();
+                        break None;
+                    }
+
+                    if options_file().is_none() {
+                        app_state.skip_options();
+                    } else {
+                        app_state.next();
+                    }
                     break Some(selected);
                 }
                 _ => {}

@@ -73,7 +73,10 @@ fn process_ui(
         // TODO: Reusable
         if let Event::Key(key) = event::read()? {
             match key.code {
-                KeyCode::Char('q') => break None,
+                KeyCode::Char('q') => {
+                    app_state.prev();
+                    break None
+                },
                 KeyCode::Down => {
                     if option_state.cursor + 1 < option_state.options.len() {
                         option_state.cursor += 1;
