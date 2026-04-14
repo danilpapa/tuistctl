@@ -10,12 +10,6 @@ pub struct TuistOptionsList {
     pub items: Vec<TuistOption>,
 }
 
-impl TuistOptionsList {
-    pub fn iter(&self) -> impl Iterator<Item = &TuistOption> {
-        self.items.iter()
-    }
-}
-
 impl FromIterator<TuistOption> for TuistOptionsList {
     fn from_iter<T: IntoIterator<Item=TuistOption>>(iter: T) -> Self {
         Self {

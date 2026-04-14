@@ -1,5 +1,5 @@
 use crossterm::{
-    event::{self, Event, KeyCode}
+    event::{self, Event}
 };
 use ratatui::{
     Terminal,
@@ -8,7 +8,7 @@ use ratatui::{
     style::{Style, Modifier},
 };
 use crate::extensions::check_box_list_ext::CheckBoxListExt;
-use crate::service::file_finder::{find_workspace, options_file};
+use crate::service::file_finder::{find_workspace};
 use crate::service::scheme_parser::get_targets;
 use crate::ui::app_state::AppState;
 use crate::ui::keyboard::basic_actions::{handle_keyboard, Action};

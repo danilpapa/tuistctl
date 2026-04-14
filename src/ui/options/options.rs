@@ -1,7 +1,7 @@
 use crate::service::file_finder::options_file;
 use crate::service::option_parser::{get_options, TuistOptionsList};
 use crossterm::{
-    event::{self, Event, KeyCode},
+    event::{self, Event},
 };
 use ratatui::{
     Terminal,
