@@ -9,7 +9,9 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     style::{Style, Modifier},
 };
+use crate::extensions::check_box_list_ext::CheckBoxListExt;
 use crate::ui::app_state::AppState;
+use crate::ui::keyboard::basic_actions::{handle_keyboard, Action};
 use crate::ui::option_state::OptionState;
 
 pub fn run_options_stage(
@@ -48,16 +50,7 @@ fn process_ui(
                     option.name.clone()
                 })
                 .enumerate()
-                // TODO: Extension to collection
-                .map(|(idx, option)| {
-                    let prefix = if option_state.selected.contains(&idx) {
-                        "[x] "
-                    } else {
-                        "[ ] "
-                    };
-                    return ListItem::new(format!("{}{}", prefix, option));
-                })
-                .collect();
+                .to_checkbox_items(&option_state.selected);
 
             let mut list_state = ListState::default();
             list_state.select(Some(option_state.cursor));
@@ -70,48 +63,36 @@ fn process_ui(
 
             f.render_stateful_widget(list, size, &mut list_state);
         })?;
-        // TODO: Reusable
+
         if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') => {
+            let string_options: Vec<String> = option_state
+                .options
+                .iter()
+                .map(|option| option.name.clone())
+                .collect();
+
+            let result = handle_keyboard(
+                key,
+                app_state,
+                &mut option_state.cursor,
+                &string_options,
+                option_state.options.len(),
+                &mut option_state.selected
+            );
+
+            match result {
+                Action::Submit(selected) => break selected,
+                // TODO: не переходит на прошлый
+                Action::Exit => {
                     app_state.prev();
-                    break None
+                    break Vec::new()
                 },
-                KeyCode::Down => {
-                    if option_state.cursor + 1 < option_state.options.len() {
-                        option_state.cursor += 1;
-                    } else {
-                        option_state.cursor = 0;
-                    }
-                }
-                KeyCode::Up => {
-                    if option_state.cursor > 0 {
-                        option_state.cursor -= 1;
-                    } else {
-                        option_state.cursor = option_state.options.len() - 1;
-                    }
-                }
-                KeyCode::Char(' ') => {
-                    if option_state.selected.contains(&option_state.cursor) {
-                        option_state.selected.remove(&option_state.cursor);
-                    } else {
-                        option_state.selected.insert(option_state.cursor);
-                    }
-                }
-                KeyCode::Enter => {
-                    let selected = option_state.selected
-                        .iter()
-                        .map(|&i| option_state.options[i].name.clone())
-                        .collect();
-                    app_state.next();
-                    break Some(selected);
-                }
-                _ => {}
+                Action::Continue => continue
             }
         }
     };
 
-    Ok(result.unwrap_or_default())
+    Ok(result)
 }
 
 fn obtain_options() -> Result<TuistOptionsList, String> {

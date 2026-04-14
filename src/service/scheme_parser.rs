@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 pub fn get_targets(workspace: &PathBuf) -> Result<Vec<String>, String> {
+    /*
     let workspace_file = workspace.to_str()
         .expect("Workspace file is not valid UTF-8");
     let output = Command::new("xcodebuild")
@@ -26,6 +27,15 @@ pub fn get_targets(workspace: &PathBuf) -> Result<Vec<String>, String> {
 
     let workspace_scheme_name = workspace_scheme_name(workspace);
     Ok(parse_schemes(&combined_output, &workspace_scheme_name))
+     */
+    let mut targets: Vec<String> = Vec::new();
+    targets.push("Hll".to_string());
+    targets.push("Hll".to_string());
+    targets.push("Hll".to_string());
+    targets.push("Hll".to_string());
+    targets.push("Hll".to_string());
+
+    Ok(targets)
 }
 
 fn parse_schemes(output: &str, workspace_scheme_name: &str) -> Vec<String> {

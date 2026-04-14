@@ -11,6 +11,7 @@ use crossterm::terminal::{Clear, ClearType};
 
 mod service;
 pub mod ui;
+mod extensions;
 
 fn main() -> anyhow::Result<()> {
     enable_raw_mode()?;

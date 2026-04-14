@@ -7,9 +7,11 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     style::{Style, Modifier},
 };
+use crate::extensions::check_box_list_ext::CheckBoxListExt;
 use crate::service::file_finder::{find_workspace, options_file};
 use crate::service::scheme_parser::get_targets;
 use crate::ui::app_state::AppState;
+use crate::ui::keyboard::basic_actions::{handle_keyboard, Action};
 use crate::ui::target_state::TargetsState;
 
 pub fn run_targets_stage(
@@ -53,15 +55,7 @@ fn process_ui(
                 .targets
                 .iter()
                 .enumerate()
-                .map(|(idx, target)| {
-                    let prefix = if state.selected.contains(&idx) {
-                        "[x] "
-                    } else {
-                        "[ ] "
-                    };
-                    ListItem::new(format!("{}{}", prefix, target))
-                })
-                .collect();
+                .to_checkbox_items(&state.selected);
 
             let mut list_state = ListState::default();
             list_state.select(Some(state.cursor));
@@ -76,56 +70,26 @@ fn process_ui(
         })?;
 
         if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') => {
+            let result = handle_keyboard(
+                key,
+                app_state,
+                &mut state.cursor,
+                &state.targets,
+                state.targets.len(),
+                &mut state.selected
+            );
+
+            match result {
+                Action::Submit(selected) => break selected,
+                Action::Exit => {
                     app_state.none();
-                    break None
+                    break Vec::new()
                 },
-                KeyCode::Down => {
-                    if state.cursor + 1 < state.targets.len() {
-                        state.cursor += 1;
-                    } else {
-                        state.cursor = 0;
-                    }
-                }
-                KeyCode::Up => {
-                    if state.cursor > 0 {
-                        state.cursor -= 1;
-                    } else {
-                        state.cursor = state.targets.len() - 1;
-                    }
-                }
-                KeyCode::Char(' ') => {
-                    if state.selected.contains(&state.cursor) {
-                        state.selected.remove(&state.cursor);
-                    } else {
-                        state.selected.insert(state.cursor);
-                    }
-                }
-                KeyCode::Enter => {
-                    let selected: Vec<String> = state.selected
-                        .iter()
-                        .map(|&i| state.targets[i].clone())
-                        .collect();
-
-                    if selected.is_empty() {
-                        app_state.none();
-                        break None;
-                    }
-
-                    if options_file().is_none() {
-                        app_state.skip_options();
-                    } else {
-                        app_state.next();
-                    }
-                    break Some(selected);
-                }
-                _ => {}
+                Action::Continue => continue
             }
         }
     };
-
-    Ok(result.unwrap_or_default())
+    Ok(result)
 }
 
 
