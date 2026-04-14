@@ -82,7 +82,6 @@ fn process_ui(
 
             match result {
                 Action::Submit(selected) => break selected,
-                // TODO: не переходит на прошлый
                 Action::Exit => {
                     app_state.prev();
                     break Vec::new()

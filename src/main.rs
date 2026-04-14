@@ -23,7 +23,7 @@ fn main() -> anyhow::Result<()> {
     let mut screen_state = AppState::Targets;
 
     loop {
-        match screen_state {
+        match &screen_state {
             AppState::Targets => {
                 run_targets_stage(&mut screen_state, &mut terminal)?;
             }

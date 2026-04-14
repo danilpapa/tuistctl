@@ -46,7 +46,6 @@ fn process_ui(
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
     state: &mut TargetsState
 ) -> anyhow::Result<Vec<String>> {
-
     let result = loop {
         terminal.draw(|f| {
             let size = f.area();

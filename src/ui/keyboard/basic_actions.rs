@@ -23,9 +23,12 @@ pub fn handle_keyboard(
                     app_state.none();
                     return Action::Exit;
                 },
-                _ => {}
+                AppState::Options => {
+                    app_state.prev();
+                    return Action::Exit;
+                },
+                _ => return Action::Continue
             }
-            app_state.prev();
         },
         KeyCode::Down => {
             if *cursor < total_items - 1 {
@@ -49,10 +52,22 @@ pub fn handle_keyboard(
             }
         }
         KeyCode::Enter => {
-            let selected = selected
+            let selected: Vec<String> = selected
                 .iter()
                 .map(|&i| items[i].clone())
                 .collect();
+
+            match app_state {
+                AppState::Targets => {
+                    if selected.is_empty() {
+                        app_state.none();
+                        // TODO: UI warning
+                        eprintln!("Cannot handle action with out selection of targets");
+                        return Action::Exit;
+                    }
+                }
+                _ => {},
+            }
 
             app_state.next();
             return Action::Submit(selected);
