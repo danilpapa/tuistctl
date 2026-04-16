@@ -1,5 +1,5 @@
 use crate::service::file_finder::options_file;
-use crate::service::option_parser::{get_options, TuistOptionsList};
+use crate::service::option_parser::{get_options, TuistOption, TuistOptionsList};
 use crossterm::{
     event::{self, Event},
 };
@@ -17,7 +17,7 @@ use crate::ui::option_state::OptionState;
 pub fn run_options_stage(
     app_state: &mut AppState,
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-) -> anyhow::Result<Vec<String>> {
+) -> anyhow::Result<(Vec<String>, Vec<TuistOption>)> {
     let options_result = obtain_options();
     match options_result {
         Ok(options) => {
@@ -38,8 +38,8 @@ fn process_ui(
     app_state: &mut AppState,
     option_state: &mut OptionState,
     terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-) -> anyhow::Result<Vec<String>> {
-    let result = loop {
+) -> anyhow::Result<(Vec<String>, Vec<TuistOption>)> {
+    let result: (Vec<String>, Vec<TuistOption>) = loop {
         terminal.draw(|f| {
             let size = f.area();
 
@@ -81,10 +81,13 @@ fn process_ui(
             );
 
             match result {
-                Action::Submit(selected) => break selected,
+                Action::Submit(selected) => {
+                    app_state.next();
+                    break (selected, option_state.options.clone())
+                },
                 Action::Exit => {
                     app_state.prev();
-                    break Vec::new()
+                    break (Vec::new(), Vec::new())
                 },
                 Action::Continue => continue
             }

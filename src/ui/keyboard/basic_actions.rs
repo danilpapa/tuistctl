@@ -18,16 +18,16 @@ pub fn handle_keyboard(
 ) -> Action {
     match key.code {
         KeyCode::Char('q') | KeyCode::Esc => {
-            match *app_state {
+            return match *app_state {
                 AppState::Targets => {
                     app_state.none();
-                    return Action::Exit;
+                    Action::Exit
                 },
                 AppState::Options => {
                     app_state.prev();
-                    return Action::Exit;
+                    Action::Exit
                 },
-                _ => return Action::Continue
+                _ => Action::Continue
             }
         },
         KeyCode::Down => {
@@ -57,18 +57,13 @@ pub fn handle_keyboard(
                 .map(|&i| items[i].clone())
                 .collect();
 
-            match app_state {
-                AppState::Targets => {
-                    if selected.is_empty() {
-                        app_state.none();
-                        // TODO: UI warning
-                        eprintln!("Cannot handle action with out selection of targets");
-                        return Action::Exit;
-                    }
-                }
-                _ => {},
+            if selected.is_empty() {
+                app_state.none();
+                // TODO: UI warning
+                eprintln!("Cannot handle action with out selection of elements");
+                return Action::Exit;
             }
-
+            
             app_state.next();
             return Action::Submit(selected);
         }

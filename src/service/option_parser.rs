@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 
+#[derive(Clone)]
 pub struct TuistOption {
     pub name: String,
     pub exec: Option<String>,

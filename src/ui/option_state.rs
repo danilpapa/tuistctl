@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use crate::service::option_parser::TuistOption;
 
+#[derive(Clone)]
 pub struct OptionState {
     pub options: Vec<TuistOption>,
     pub selected: HashSet<usize>,

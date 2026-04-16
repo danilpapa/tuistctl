@@ -7,7 +7,8 @@ use crossterm::{
 };
 use ratatui::{Terminal, backend::CrosstermBackend};
 use std::io;
-use crossterm::terminal::{Clear, ClearType};
+use crate::service::option_parser::TuistOption;
+use crate::ui::generation::generate_cmd;
 
 mod service;
 pub mod ui;
@@ -22,22 +23,28 @@ fn main() -> anyhow::Result<()> {
     let mut terminal = Terminal::new(backend)?;
     let mut screen_state = AppState::Targets;
 
+    let mut targets: Vec<String> = Vec::new();
+
+    let mut options: Vec<String> = Vec::new();
+    let mut source_options: Vec<TuistOption> = Vec::new();
+
     loop {
         match &screen_state {
             AppState::Targets => {
-                run_targets_stage(&mut screen_state, &mut terminal)?;
+                targets = run_targets_stage(&mut screen_state, &mut terminal)?;
             }
             AppState::Options => {
-                run_options_stage(&mut screen_state, &mut terminal)?;
+                (options, source_options) = run_options_stage(&mut screen_state, &mut terminal)?;
             }
             AppState::Generation => {
-                break
+                let cmd: String = generate_cmd(&targets, &options, &source_options);
+                println!("{}", cmd);
+                screen_state.none();
             },
             AppState::None => {
                 execute!(
                     terminal.backend_mut(),
-                    LeaveAlternateScreen,
-                    Clear(ClearType::All)
+                    LeaveAlternateScreen
                 )?;
                 break
             }
