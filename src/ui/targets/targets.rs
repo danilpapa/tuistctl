@@ -12,6 +12,7 @@ use crate::service::file_finder::{find_workspace};
 use crate::service::scheme_parser::get_targets;
 use crate::ui::app_state::AppState;
 use crate::ui::keyboard::basic_actions::{handle_keyboard, Action};
+use crate::ui::table::table_view::render_table_view;
 use crate::ui::target_state::TargetsState;
 
 pub fn run_targets_stage(
@@ -47,26 +48,7 @@ fn process_ui(
     state: &mut TargetsState
 ) -> anyhow::Result<Vec<String>> {
     let result = loop {
-        terminal.draw(|f| {
-            let size = f.area();
-
-            let ui_items: Vec<ListItem> = state
-                .targets
-                .iter()
-                .enumerate()
-                .to_checkbox_items(&state.selected);
-
-            let mut list_state = ListState::default();
-            list_state.select(Some(state.cursor));
-
-            let list = List::new(ui_items)
-                .block(Block::default().title("Targets").borders(Borders::ALL))
-                .highlight_style(
-                    Style::default().add_modifier(Modifier::REVERSED)
-                );
-
-            f.render_stateful_widget(list, size, &mut list_state);
-        })?;
+        render_table_view(terminal, &state.targets, &mut state.selected, state.cursor);
 
         if let Event::Key(key) = event::read()? {
             let result = handle_keyboard(

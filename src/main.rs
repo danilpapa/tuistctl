@@ -37,6 +37,7 @@ fn main() -> anyhow::Result<()> {
                 (options, source_options) = run_options_stage(&mut screen_state, &mut terminal)?;
             }
             AppState::Generation => {
+                // TODO: не переходит сюда
                 let cmd: String = generate_cmd(&targets, &options, &source_options);
                 println!("{}", cmd);
                 screen_state.none();

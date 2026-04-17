@@ -5,3 +5,4 @@ pub mod options;
 pub mod option_state;
 pub mod keyboard;
 pub mod generation;
+pub mod table;
