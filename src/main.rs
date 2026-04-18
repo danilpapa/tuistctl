@@ -14,6 +14,8 @@ mod service;
 pub mod ui;
 mod extensions;
 
+pub type TerminalCFG = Terminal<CrosstermBackend<io::Stdout>>;
+
 fn main() -> anyhow::Result<()> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();

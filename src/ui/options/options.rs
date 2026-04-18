@@ -3,20 +3,15 @@ use crate::service::option_parser::{get_options, TuistOption, TuistOptionsList};
 use crossterm::{
     event::{self, Event},
 };
-use ratatui::{
-    Terminal,
-    backend::CrosstermBackend,
-    widgets::{Block, Borders, List, ListItem, ListState},
-    style::{Style, Modifier},
-};
-use crate::extensions::check_box_list_ext::CheckBoxListExt;
+use crate::TerminalCFG;
 use crate::ui::app_state::AppState;
 use crate::ui::keyboard::basic_actions::{handle_keyboard, Action};
 use crate::ui::option_state::OptionState;
+use crate::ui::table::table_view::render_table_view;
 
 pub fn run_options_stage(
     app_state: &mut AppState,
-    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    terminal: &mut TerminalCFG,
 ) -> anyhow::Result<(Vec<String>, Vec<TuistOption>)> {
     let options_result = obtain_options();
     match options_result {
@@ -37,32 +32,15 @@ pub fn run_options_stage(
 fn process_ui(
     app_state: &mut AppState,
     option_state: &mut OptionState,
-    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    terminal: &mut TerminalCFG,
 ) -> anyhow::Result<(Vec<String>, Vec<TuistOption>)> {
     let result: (Vec<String>, Vec<TuistOption>) = loop {
-        terminal.draw(|f| {
-            let size = f.area();
-
-            let ui_items: Vec<ListItem> = option_state
-                .options
-                .iter()
-                .map(|option| {
-                    option.name.clone()
-                })
-                .enumerate()
-                .to_checkbox_items(&option_state.selected);
-
-            let mut list_state = ListState::default();
-            list_state.select(Some(option_state.cursor));
-
-            let list = List::new(ui_items)
-                .block(Block::default().title("Options").borders(Borders::ALL))
-                .highlight_style(
-                    Style::default().add_modifier(Modifier::REVERSED)
-                );
-
-            f.render_stateful_widget(list, size, &mut list_state);
-        })?;
+        render_table_view(
+            terminal,
+            option_state.options.iter(),
+            &mut option_state.selected,
+            option_state.cursor
+        );
 
         if let Event::Key(key) = event::read()? {
             let string_options: Vec<String> = option_state

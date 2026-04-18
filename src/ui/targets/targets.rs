@@ -1,15 +1,9 @@
 use crossterm::{
     event::{self, Event}
 };
-use ratatui::{
-    Terminal,
-    backend::CrosstermBackend,
-    widgets::{Block, Borders, List, ListItem, ListState},
-    style::{Style, Modifier},
-};
-use crate::extensions::check_box_list_ext::CheckBoxListExt;
 use crate::service::file_finder::{find_workspace};
 use crate::service::scheme_parser::get_targets;
+use crate::TerminalCFG;
 use crate::ui::app_state::AppState;
 use crate::ui::keyboard::basic_actions::{handle_keyboard, Action};
 use crate::ui::table::table_view::render_table_view;
@@ -17,7 +11,7 @@ use crate::ui::target_state::TargetsState;
 
 pub fn run_targets_stage(
     app_state: &mut AppState,
-    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    terminal: &mut TerminalCFG,
 ) -> anyhow::Result<Vec<String>> {
     let targets = obtain_targets();
     match targets {
@@ -44,11 +38,16 @@ fn obtain_targets() -> Result<Vec<String>, String> {
 
 fn process_ui(
     app_state: &mut AppState,
-    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    terminal: &mut TerminalCFG,
     state: &mut TargetsState
 ) -> anyhow::Result<Vec<String>> {
     let result = loop {
-        render_table_view(terminal, &state.targets, &mut state.selected, state.cursor);
+        render_table_view(
+            terminal,
+            state.targets.iter(),
+            &mut state.selected,
+            state.cursor
+        );
 
         if let Event::Key(key) = event::read()? {
             let result = handle_keyboard(

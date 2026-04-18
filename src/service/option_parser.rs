@@ -1,10 +1,16 @@
-use std::fs;
+use std::{fmt, fs};
 use std::path::Path;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TuistOption {
     pub name: String,
     pub exec: Option<String>,
+}
+
+impl fmt::Display for TuistOption {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
 }
 
 pub struct TuistOptionsList {

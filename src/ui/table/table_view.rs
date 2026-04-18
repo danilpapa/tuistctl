@@ -1,21 +1,22 @@
 use std::collections::HashSet;
-use ratatui::backend::CrosstermBackend;
 use ratatui::prelude::{Modifier, Style};
-use ratatui::Terminal;
 use ratatui::widgets::{Block, Borders, List, ListItem, ListState};
 use crate::extensions::check_box_list_ext::CheckBoxListExt;
+use crate::TerminalCFG;
 
-pub fn render_table_view(
-    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    items: &Vec<String>,
+pub fn render_table_view<I, T>(
+    terminal: &mut TerminalCFG,
+    items: I,
     selected: &mut HashSet<usize>,
     cursor: usize,
-) {
+) where
+    I: Iterator<Item = T>,
+    T: ToString,
+{
     _ = terminal.draw(|f| {
         let size = f.area();
 
         let ui_items: Vec<ListItem> = items
-            .iter()
             .enumerate()
             .to_checkbox_items(selected);
 
