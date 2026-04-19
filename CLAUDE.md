@@ -1,0 +1,2 @@
+- dont visit .gitignore files and directoried fex DEBUG directory
+- use cargo check command to check if code is compiling

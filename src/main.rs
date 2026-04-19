@@ -29,6 +29,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut options: Vec<String> = Vec::new();
     let mut source_options: Vec<TuistOption> = Vec::new();
+    let mut generated_cmd: Option<String> = None;
 
     loop {
         match &screen_state {
@@ -39,9 +40,7 @@ fn main() -> anyhow::Result<()> {
                 (options, source_options) = run_options_stage(&mut screen_state, &mut terminal)?;
             }
             AppState::Generation => {
-                // TODO: не переходит сюда
-                let cmd: String = generate_cmd(&targets, &options, &source_options);
-                println!("{}", cmd);
+                generated_cmd = Some(generate_cmd(&targets, &options, &source_options));
                 screen_state.none();
             },
             AppState::None => {

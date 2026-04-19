@@ -60,11 +60,9 @@ fn process_ui(
 
             match result {
                 Action::Submit(selected) => {
-                    app_state.next();
                     break (selected, option_state.options.clone())
                 },
                 Action::Exit => {
-                    app_state.prev();
                     break (Vec::new(), Vec::new())
                 },
                 Action::Continue => continue
