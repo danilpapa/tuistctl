@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut options: Vec<String> = Vec::new();
     let mut source_options: Vec<TuistOption> = Vec::new();
-    let mut generated_cmd: Option<String> = None;
+    // let mut generated_cmd: Option<String> = None;
 
     loop {
         match &screen_state {
@@ -42,7 +42,7 @@ fn main() -> anyhow::Result<()> {
             }
             AppState::Generation => {
                 run_generation_animation(&mut terminal)?;
-                generated_cmd = Some(generate_cmd(&targets, &options, &source_options));
+                _ = Some(generate_cmd(&targets, &options, &source_options));
                 screen_state.none();
             },
             AppState::None => {

@@ -75,5 +75,4 @@ pub fn handle_keyboard(
             return Action::Continue;
         }
     }
-    return Action::Continue;
 }
