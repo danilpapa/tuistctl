@@ -46,7 +46,8 @@ fn process_ui(
             terminal,
             state.targets.iter(),
             &mut state.selected,
-            state.cursor
+            state.cursor,
+            state.warning.as_deref(),
         );
 
         if let Event::Key(key) = event::read()? {
@@ -61,6 +62,14 @@ fn process_ui(
 
             match result {
                 Action::Submit(selected) => break selected,
+                Action::Warning(msg) => {
+                    state.warning = Some(msg);
+                    continue;
+                },
+                Action::ClearWarning => {
+                    state.warning = None;
+                    continue;
+                },
                 Action::Exit => {
                     app_state.none();
                     break Vec::new()

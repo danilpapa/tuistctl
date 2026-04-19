@@ -39,7 +39,8 @@ fn process_ui(
             terminal,
             option_state.options.iter(),
             &mut option_state.selected,
-            option_state.cursor
+            option_state.cursor,
+            option_state.warning.as_deref(),
         );
 
         if let Event::Key(key) = event::read()? {
@@ -61,6 +62,14 @@ fn process_ui(
             match result {
                 Action::Submit(selected) => {
                     break (selected, option_state.options.clone())
+                },
+                Action::Warning(msg) => {
+                    option_state.warning = Some(msg);
+                    continue;
+                },
+                Action::ClearWarning => {
+                    option_state.warning = None;
+                    continue;
                 },
                 Action::Exit => {
                     break (Vec::new(), Vec::new())

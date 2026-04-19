@@ -4,7 +4,9 @@ use crate::ui::app_state::AppState;
 
 pub enum Action {
     Continue,
+    ClearWarning,
     Submit(Vec<String>),
+    Warning(String),
     Exit,
 }
 
@@ -36,6 +38,7 @@ pub fn handle_keyboard(
             } else {
                 *cursor = 0;
             }
+            return Action::ClearWarning;
         }
         KeyCode::Up => {
             if *cursor > 0 {
@@ -43,6 +46,7 @@ pub fn handle_keyboard(
             } else {
                 *cursor = total_items - 1;
             }
+            return Action::ClearWarning;
         }
         KeyCode::Char(' ') => {
             if selected.contains(cursor) {
@@ -50,6 +54,7 @@ pub fn handle_keyboard(
             } else {
                 selected.insert(*cursor);
             }
+            return Action::ClearWarning;
         }
         KeyCode::Enter => {
             let selected: Vec<String> = selected
@@ -58,12 +63,11 @@ pub fn handle_keyboard(
                 .collect();
 
             if selected.is_empty() {
-                app_state.none();
-                // TODO: UI warning
-                eprintln!("Cannot handle action with out selection of elements");
-                return Action::Exit;
+                return Action::Warning(
+                    "Select targets/options to generate your project".to_string()
+                );
             }
-            
+
             app_state.next();
             return Action::Submit(selected);
         }
