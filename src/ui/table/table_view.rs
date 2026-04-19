@@ -12,22 +12,26 @@ pub fn render_table_view<I, T>(
     selected: &mut HashSet<usize>,
     cursor: usize,
     warning: Option<&str>,
+    tip: Option<&str>,
     title: &str,
 ) where
     I: Iterator<Item = T>,
     T: ToString,
 {
     let title = title.to_string();
+    let tip = tip.map(|s| s.to_string());
     _ = terminal.draw(move |f| {
         let area = f.area();
 
         let warning_height = if warning.is_some() { 3 } else { 0 };
+        let tip_height = if tip.is_some() { 3 } else { 0 };
 
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3),
                 Constraint::Min(1),
+                Constraint::Length(tip_height),
                 Constraint::Length(warning_height),
                 Constraint::Length(1),
             ])
@@ -71,9 +75,31 @@ pub fn render_table_view<I, T>(
 
         f.render_stateful_widget(list, chunks[1], &mut list_state);
 
+        // --- Tip ---
+        if let Some(msg) = &tip {
+            let tip_area = chunks[2];
+            f.render_widget(Clear, tip_area);
+
+            let tip_text = Line::from(vec![
+                Span::styled(" tip ", Style::default().fg(Color::Black).bg(Color::Blue).add_modifier(Modifier::BOLD)),
+                Span::styled(format!(" {}", msg), Style::default().fg(Color::Blue)),
+            ]);
+
+            let tip_widget = Paragraph::new(tip_text)
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_type(BorderType::Rounded)
+                        .border_style(Style::default().fg(Color::Blue)),
+                )
+                .alignment(Alignment::Left);
+
+            f.render_widget(tip_widget, tip_area);
+        }
+
         // --- Warning ---
         if let Some(msg) = warning {
-            let warn_area = chunks[2];
+            let warn_area = chunks[3];
             f.render_widget(Clear, warn_area);
 
             let warning_text = Line::from(vec![
@@ -109,6 +135,6 @@ pub fn render_table_view<I, T>(
             Span::styled(" quit  ", Style::default().fg(Color::DarkGray)),
         ]))
         .alignment(Alignment::Left);
-        f.render_widget(footer, chunks[3]);
+        f.render_widget(footer, chunks[4]);
     });
 }

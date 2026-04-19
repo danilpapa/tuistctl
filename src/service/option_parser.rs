@@ -5,6 +5,7 @@ use std::path::Path;
 pub struct TuistOption {
     pub name: String,
     pub exec: Option<String>,
+    pub tip: Option<String>,
 }
 
 impl fmt::Display for TuistOption {
@@ -29,16 +30,25 @@ pub fn get_options(path: &Path) -> TuistOptionsList {
     fs::read_to_string(&path)
         .expect("Failed to read options!")
         .lines()
-        .map(|line| line.to_string())
+        .filter(|line| !line.trim().is_empty() && !line.trim_start().starts_with("//"))
         .map(|line| {
-            if line.contains("=") {
-                let params = line.split("=").collect::<Vec<&str>>();
-                return TuistOption {
-                    name: params[0].to_string(),
-                    exec: Some(params[1].to_string()),
+            let (definition, tip) = if let Some(idx) = line.find("//") {
+                let tip = line[idx + 2..].trim().to_string();
+                (&line[..idx], Some(tip))
+            } else {
+                (line, None)
+            };
+            let definition = definition.trim();
+
+            if definition.contains("=") {
+                let params = definition.splitn(2, "=").collect::<Vec<&str>>();
+                TuistOption {
+                    name: params[0].trim().to_string(),
+                    exec: Some(params[1].trim().to_string()),
+                    tip,
                 }
             } else {
-                return TuistOption { name: line, exec: None }
+                TuistOption { name: definition.to_string(), exec: None, tip }
             }
         })
         .collect::<TuistOptionsList>()

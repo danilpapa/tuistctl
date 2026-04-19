@@ -35,12 +35,17 @@ fn process_ui(
     terminal: &mut TerminalCFG,
 ) -> anyhow::Result<(Vec<String>, Vec<TuistOption>)> {
     let result: (Vec<String>, Vec<TuistOption>) = loop {
+        let tip = option_state.options
+            .get(option_state.cursor)
+            .and_then(|o| o.tip.as_deref());
+
         render_table_view(
             terminal,
             option_state.options.iter(),
             &mut option_state.selected,
             option_state.cursor,
             option_state.warning.as_deref(),
+            tip,
             "Step 2/2 — Select Options",
         );
 

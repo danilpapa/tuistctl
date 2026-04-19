@@ -48,6 +48,7 @@ fn process_ui(
             &mut state.selected,
             state.cursor,
             state.warning.as_deref(),
+            None,
             "Step 1/2 — Select Targets",
         );
 
