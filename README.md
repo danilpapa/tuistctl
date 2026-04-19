@@ -2,6 +2,8 @@
 
 A terminal UI for running `tuist generate` on specific targets without memorizing flags or env vars
 
+![generation viewer](/resources/tuistctl.gif)
+
 ## Install
 
 ```sh
