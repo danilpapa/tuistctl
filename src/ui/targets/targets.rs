@@ -48,6 +48,7 @@ fn process_ui(
             &mut state.selected,
             state.cursor,
             state.warning.as_deref(),
+            "Step 1/2 — Select Targets",
         );
 
         if let Event::Key(key) = event::read()? {

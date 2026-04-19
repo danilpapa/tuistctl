@@ -41,6 +41,7 @@ fn process_ui(
             &mut option_state.selected,
             option_state.cursor,
             option_state.warning.as_deref(),
+            "Step 2/2 — Select Options",
         );
 
         if let Event::Key(key) = event::read()? {
