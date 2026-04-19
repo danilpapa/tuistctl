@@ -1,3 +1,5 @@
+pub mod animation;
+
 use crate::service::option_parser::TuistOption;
 
 pub fn generate_cmd(
