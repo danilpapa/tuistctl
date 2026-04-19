@@ -41,8 +41,8 @@ fn main() -> anyhow::Result<()> {
                 (options, source_options) = run_options_stage(&mut screen_state, &mut terminal)?;
             }
             AppState::Generation => {
-                run_generation_animation(&mut terminal)?;
-                _ = Some(generate_cmd(&targets, &options, &source_options));
+                let cmd = generate_cmd(&targets, &options, &source_options);
+                run_generation_animation(&mut terminal, &cmd)?;
                 screen_state.none();
             },
             AppState::None => {

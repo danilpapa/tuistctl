@@ -1,4 +1,6 @@
-use std::time::{Duration, Instant};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 use crossterm::event;
 use ratatui::layout::{Alignment, Constraint, Direction, Layout};
 use ratatui::prelude::{Color, Modifier, Style};
@@ -68,15 +70,30 @@ impl MatrixState {
     }
 }
 
-pub fn run_generation_animation(terminal: &mut TerminalCFG) -> anyhow::Result<()> {
-    let start = Instant::now();
-    let total = Duration::from_millis(2500);
+pub fn run_generation_animation(terminal: &mut TerminalCFG, cmd: &str) -> anyhow::Result<()> {
+    let done = Arc::new(AtomicBool::new(false));
+    let done_clone = Arc::clone(&done);
+
+    let workspace_dir = crate::service::file_finder::find_workspace()
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()))
+        .unwrap_or_else(|| std::path::PathBuf::from("."));
+
+    let cmd = cmd.to_string();
+    std::thread::spawn(move || {
+        let _ = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&cmd)
+            .current_dir(&workspace_dir)
+            .spawn()
+            .and_then(|mut child| child.wait());
+        done_clone.store(true, Ordering::Relaxed);
+    });
 
     let size = terminal.size()?;
     let mut state = MatrixState::new(size.width as usize, size.height as usize);
     let mut frame = 0usize;
 
-    while start.elapsed() < total {
+    while !done.load(Ordering::Relaxed) {
         render(terminal, &state, frame);
         if event::poll(Duration::from_millis(80))? {
             event::read()?;
